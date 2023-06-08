@@ -10,12 +10,18 @@ class WalletController{
     getOwnedTokens = async(req,res) => {
         try {
             let { address } = req.params;
-            const response = await Moralis.EvmApi.nft.getWalletNFTs({
-                address,
-                chain,
-            });
             let code = httpStatus.OK;
-            res.status(code).send({ status:true, code, message: "", data:response.toJSON().result });
+            if (!address || address == "undefined") {
+                return res.status(code).send({ status:true, code, message: "", data: [] });
+            } else {
+                const response = await Moralis.EvmApi.nft.getWalletNFTs({
+                    address,
+                    chain,
+                });
+                
+                res.status(code).send({ status:true, code, message: "", data:response.toJSON().result });
+            }
+            
         } catch (e) {
             console.log(e)
             res.status(httpStatus.BAD_GATEWAY).send(e);
@@ -23,13 +29,17 @@ class WalletController{
     }
     getToken = async(req, res) => {
         let { address,tokenId } = req.params;
+        let code = httpStatus.OK;
+        if (!address || address == "undefined" || !tokenId || tokenId == "undefined") {
+            return res.status(code).send({ status:true, code, message: "", data: null });
+        }
         const response = await Moralis.EvmApi.nft.getNFTMetadata({
             address,
             chain,
             tokenId
         });
-        let code = httpStatus.OK;
-        res.status(code).send({ status:true, code, message: "", data:response.toJSON() });
+        
+        res.status(code).send({ status:true, code, message: "", data: response? response.toJSON() : null });
     }
 }
 module.exports = WalletController;
